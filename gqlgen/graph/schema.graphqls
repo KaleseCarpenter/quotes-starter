@@ -1,0 +1,18 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Quotes{
+  "The id of a quote"
+  id: String!
+  "All quotes are strings"
+  quote: String!
+  "Author is the creator of the quote"
+  author: String!
+}
+
+"Author of a Quote"
+type Author {
+  id: ID!
+  name: String!
+}

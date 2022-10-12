@@ -1,0 +1,23 @@
+# type Quotes{
+#   id: String!
+#   quote: String!
+#   author: String!
+# }
+
+# type Query {
+#   id: String!
+#   quotes: [Quotes]!
+#   author: String!
+# }
+
+# input QuoteInput {
+#   quote: String!
+#   author: String!
+# }
+
+# type Mutation {
+#   createQuote(input: QuoteInput!): Quotes!
+#   deleteQuote(id: ID!)
+# }
+
+
