@@ -18,3 +18,4 @@ type Author {
   "The name of the person who created the quote"
   name: String!
 }
+
