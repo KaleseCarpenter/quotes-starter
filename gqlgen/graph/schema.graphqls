@@ -12,8 +12,8 @@ type Quote {
 }
 
 type Query {
-  quote: Quote!
-
+  getRandomQuote: Quote!
+  getQuoteById(id: String!) : Quote!
 } 
 
 
