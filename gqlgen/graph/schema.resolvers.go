@@ -6,7 +6,6 @@ package graph
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -35,25 +34,31 @@ func (r *queryResolver) GetRandomQuote(ctx context.Context) (*model.Quote, error
 	var newGoQuote model.Quote
 	json.Unmarshal(responseData, &newGoQuote)
 
-	/*fmt.Println(responseObject.Name)
-	fmt.Println(len(responseObject.Quote))
-
-	for i := 0; i < len(responseObject.Quote); i++ {
-		fmt.Println(responseObject.Quote[i].ID.Author)
-	}*/
 	return &newGoQuote, nil
 }
 
-/*quote := &model.Quote{
-	ID:     "12-3422-1-23432-009954",
-	Quote:  "I love being my authentic self",
-	Author: "Kalese Carpenter",
-}*/
-//return quote, nil
-
 // GetQuoteByID is the resolver for the getQuoteById field.
 func (r *queryResolver) GetQuoteByID(ctx context.Context, id string) (*model.Quote, error) {
-	panic(fmt.Errorf("not implemented: GetQuoteByID - getQuoteById"))
+	requestURL := "http://34.160.48.181/quotes/" + id
+	request, err := http.NewRequest("GET", requestURL, nil)
+	request.Header.Set("x-api-key", "COCKTAILSAUCE")
+
+	if err != nil {
+		return nil, err
+	}
+
+	client := &http.Client{}
+	response, _ := client.Do(request)
+
+	responseData, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var singleQuote model.Quote
+	json.Unmarshal(responseData, &singleQuote)
+
+	return &singleQuote, nil
 }
 
 // Query returns generated.QueryResolver implementation.
