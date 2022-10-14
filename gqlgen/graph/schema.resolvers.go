@@ -6,7 +6,7 @@ package graph
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/kalesecarpenter/quotes-starter/gqlgen/graph/generated"
@@ -15,18 +15,19 @@ import (
 
 // GetRandomQuote is the resolver for the getRandomQuote field.
 func (r *queryResolver) GetRandomQuote(ctx context.Context) (*model.Quote, error) {
-	//defer response.Body.Close() -- delay the execution of the function or method or an anonymous method until the nearby functions returns
+	// query the API endpoint
 	request, err := http.NewRequest("GET", "http://34.160.48.181/quotes", nil)
+	// Check Header
 	request.Header.Set("x-api-key", "COCKTAILSAUCE")
 
 	if err != nil {
 		return nil, err
 	}
-
+	// Configure the client-server connection
 	client := &http.Client{}
 	response, _ := client.Do(request)
 
-	responseData, err := ioutil.ReadAll(response.Body)
+	responseData, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -39,6 +40,7 @@ func (r *queryResolver) GetRandomQuote(ctx context.Context) (*model.Quote, error
 
 // GetQuoteByID is the resolver for the getQuoteById field.
 func (r *queryResolver) GetQuoteByID(ctx context.Context, id string) (*model.Quote, error) {
+	// Add the ID to the end of the URL
 	requestURL := "http://34.160.48.181/quotes/" + id
 	request, err := http.NewRequest("GET", requestURL, nil)
 	request.Header.Set("x-api-key", "COCKTAILSAUCE")
@@ -46,15 +48,16 @@ func (r *queryResolver) GetQuoteByID(ctx context.Context, id string) (*model.Quo
 	if err != nil {
 		return nil, err
 	}
-
+	// Configure the client-server connection
 	client := &http.Client{}
 	response, _ := client.Do(request)
 
-	responseData, err := ioutil.ReadAll(response.Body)
+	responseData, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
 	}
 
+	// Taking the data from struct and putting it into json Quote
 	var singleQuote model.Quote
 	json.Unmarshal(responseData, &singleQuote)
 
