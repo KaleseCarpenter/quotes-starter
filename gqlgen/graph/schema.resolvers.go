@@ -50,6 +50,8 @@ func (r *mutationResolver) DeleteQuote(ctx context.Context, id string) (*model.Q
 	// Pull quote By ID from the database
 	requestURL := "http://34.160.48.181/quotes/" + id
 	req, _ := http.NewRequest("GET", requestURL, nil)
+	// Check Header
+	req.Header.Set("x-api-key", "COCKTAILSAUCE")
 	// Configure the client-server connection
 	client := &http.Client{}
 	// throw error if not found
@@ -57,6 +59,9 @@ func (r *mutationResolver) DeleteQuote(ctx context.Context, id string) (*model.Q
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println(response)
+
 	quoteByID := model.Quote{}
 	quoteByIdResponse, IdResponseError := io.ReadAll(response.Body)
 	if IdResponseError != nil {
@@ -65,6 +70,7 @@ func (r *mutationResolver) DeleteQuote(ctx context.Context, id string) (*model.Q
 
 	// response needs to be unmarshaled into a quoted struct
 	json.Unmarshal(quoteByIdResponse, &quoteByID)
+
 	fmt.Println(quoteByID)
 	// Make a request to the API for DELETING by ID
 	request, _ := http.NewRequest("DELETE", "http://34.160.48.181/quotes/"+id, nil)
@@ -78,7 +84,7 @@ func (r *mutationResolver) DeleteQuote(ctx context.Context, id string) (*model.Q
 
 	// This gives the ID from the created quote
 	_, deletedResponseError := io.ReadAll(deleteResponse.Body)
-	fmt.Println(deletedResponseError)
+	//fmt.Println(deletedResponseError)
 	if deletedResponseError != nil {
 		return nil, deletedResponseError
 	}
