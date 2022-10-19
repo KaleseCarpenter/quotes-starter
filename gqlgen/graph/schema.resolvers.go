@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -44,52 +43,26 @@ func (r *mutationResolver) PostQuote(ctx context.Context, input model.NewQuote) 
 }
 
 // DeleteQuote is the resolver for the deleteQuote field.
-func (r *mutationResolver) DeleteQuote(ctx context.Context, id string) (*model.Quote, error) {
-
-	//Return full quote object so user can see what is being deleted
-	// Pull quote By ID from the database
-	requestURL := "http://34.160.48.181/quotes/" + id
-	req, _ := http.NewRequest("GET", requestURL, nil)
+func (r *mutationResolver) DeleteQuote(ctx context.Context, id string) (*string, error) {
+	// Make a request to the API for DELETING by ID
+	apiURL := "http://34.160.48.181/quotes/" + id
+	requestURL, err := http.NewRequest("DELETE", apiURL, nil)
 	// Check Header
-	req.Header.Set("x-api-key", "COCKTAILSAUCE")
-	// Configure the client-server connection
-	client := &http.Client{}
+	requestURL.Header.Set("x-api-key", "COCKTAILSAUCE")
 	// throw error if not found
-	response, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println(response)
-
-	quoteByID := model.Quote{}
-	quoteByIdResponse, IdResponseError := io.ReadAll(response.Body)
-	if IdResponseError != nil {
-		return nil, IdResponseError
+	client := &http.Client{}
+	deleteResponse, err := client.Do(requestURL)
+	// throw error if response not found
+	if err != nil {
+		return nil, err
 	}
+	// // This gives the ID from the created quote
+	// _, deletedResponseError := io.ReadAll(deleteResponse.Body)
 
-	// response needs to be unmarshaled into a quoted struct
-	json.Unmarshal(quoteByIdResponse, &quoteByID)
-
-	fmt.Println(quoteByID)
-	// Make a request to the API for DELETING by ID
-	request, _ := http.NewRequest("DELETE", "http://34.160.48.181/quotes/"+id, nil)
-	// Check Header
-	request.Header.Set("x-api-key", "COCKTAILSAUCE")
-
-	deleteResponse, requestError := client.Do(request)
-	if requestError != nil {
-		return nil, requestError
-	}
-
-	// This gives the ID from the created quote
-	_, deletedResponseError := io.ReadAll(deleteResponse.Body)
-	//fmt.Println(deletedResponseError)
-	if deletedResponseError != nil {
-		return nil, deletedResponseError
-	}
-	return &quoteByID, nil
-
+	return &deleteResponse.Status, nil
 }
 
 // GetRandomQuote is the resolver for the getRandomQuote field.

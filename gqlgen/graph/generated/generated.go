@@ -63,7 +63,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	PostQuote(ctx context.Context, input model.NewQuote) (*model.Quote, error)
-	DeleteQuote(ctx context.Context, id string) (*model.Quote, error)
+	DeleteQuote(ctx context.Context, id string) (*string, error)
 }
 type QueryResolver interface {
 	GetRandomQuote(ctx context.Context) (*model.Quote, error)
@@ -250,10 +250,8 @@ type Mutation {
  "Create a new Quote in the database"
  postQuote(input:NewQuote!): Quote!
  "Remove a quote from database"
- deleteQuote(id: ID!): Quote!
-}
-
-`, BuiltIn: false},
+ deleteQuote(id: String!): String
+}`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -267,7 +265,7 @@ func (ec *executionContext) field_Mutation_deleteQuote_args(ctx context.Context,
 	var arg0 string
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -443,14 +441,11 @@ func (ec *executionContext) _Mutation_deleteQuote(ctx context.Context, field gra
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Quote)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNQuote2ᚖgithubᚗcomᚋkalesecarpenterᚋquotesᚑstarterᚋgqlgenᚋgraphᚋmodelᚐQuote(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deleteQuote(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -460,15 +455,7 @@ func (ec *executionContext) fieldContext_Mutation_deleteQuote(ctx context.Contex
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Quote_id(ctx, field)
-			case "quote":
-				return ec.fieldContext_Quote_quote(ctx, field)
-			case "author":
-				return ec.fieldContext_Quote_author(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Quote", field.Name)
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	defer func() {
@@ -2712,9 +2699,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 				return ec._Mutation_deleteQuote(ctx, field)
 			})
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3181,21 +3165,6 @@ func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interf
 
 func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.SelectionSet, v bool) graphql.Marshaler {
 	res := graphql.MarshalBoolean(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalID(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalID(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
