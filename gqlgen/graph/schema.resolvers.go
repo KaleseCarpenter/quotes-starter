@@ -24,7 +24,6 @@ func (r *mutationResolver) PostQuote(ctx context.Context, input model.NewQuote) 
 	}
 	newQuote, _ := json.Marshal(&quote)
 	postBody := bytes.NewBuffer(newQuote)
-
 	// Post it to the datatbase SUCCESSFULY
 	request, _ := http.NewRequest("POST", "http://34.160.48.181/quotes", postBody)
 	request.Header.Set("x-api-key", "COCKTAILSAUCE")
@@ -72,7 +71,6 @@ func (r *mutationResolver) DeleteQuote(ctx context.Context, id string) (*string,
 	default:
 		return &deleteResponse.Status, nil
 	}
-
 }
 
 // GetRandomQuote is the resolver for the getRandomQuote field.
@@ -81,19 +79,16 @@ func (r *queryResolver) GetRandomQuote(ctx context.Context) (*model.Quote, error
 	request, err := http.NewRequest("GET", "http://34.160.48.181/quotes", nil)
 	// Check Header
 	request.Header.Set("x-api-key", "COCKTAILSAUCE")
-
 	if err != nil {
 		return nil, err
 	}
 	// Configure the client-server connection
 	client := &http.Client{}
 	response, _ := client.Do(request)
-
 	responseData, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
 	}
-
 	var newGoQuote model.Quote
 	json.Unmarshal(responseData, &newGoQuote)
 
@@ -107,20 +102,17 @@ func (r *queryResolver) GetQuoteByID(ctx context.Context, id string) (*model.Quo
 	requestURL := "http://34.160.48.181/quotes/" + id
 	request, err := http.NewRequest("GET", requestURL, nil)
 	request.Header.Set("x-api-key", "COCKTAILSAUCE")
-
 	if err != nil {
 		return nil, err
 	}
 	// Configure the client-server connection
 	client := &http.Client{}
 	//response, _ := client.Do(request)
-
-	// Check if input is valid
 	clientResponse, err := client.Do(request)
 	if err != nil {
 		return nil, err
 	}
-
+	// Check ID validation
 	switch clientResponse.StatusCode {
 	case 204:
 		return nil, errors.New("error: Sorry Bruh, No content")
@@ -132,13 +124,10 @@ func (r *queryResolver) GetQuoteByID(ctx context.Context, id string) (*model.Quo
 	if err != nil {
 		return nil, err
 	}
-
 	// Taking the data from struct and putting it into json Quote to return one quote
 	var singleQuote model.Quote
 	json.Unmarshal(responseData, &singleQuote)
-
 	return &singleQuote, nil
-
 }
 
 // Mutation returns generated.MutationResolver implementation.
