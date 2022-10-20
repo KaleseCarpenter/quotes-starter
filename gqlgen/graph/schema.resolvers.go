@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 
@@ -59,10 +60,16 @@ func (r *mutationResolver) DeleteQuote(ctx context.Context, id string) (*string,
 	if err != nil {
 		return nil, err
 	}
-	// // This gives the ID from the created quote
-	// _, deletedResponseError := io.ReadAll(deleteResponse.Body)
-
-	return &deleteResponse.Status, nil
+	switch deleteResponse.StatusCode {
+	case 204:
+		deleteResponse := "Bruh, Delete was successful!"
+		return &deleteResponse, nil
+	case 404:
+		deleteResponse := "Sorry, ID Not Found! Please enter a correct ID"
+		return &deleteResponse, nil
+	default:
+		return &deleteResponse.Status, nil
+	}
 }
 
 // GetRandomQuote is the resolver for the getRandomQuote field.
@@ -92,6 +99,7 @@ func (r *queryResolver) GetRandomQuote(ctx context.Context) (*model.Quote, error
 
 // GetQuoteByID is the resolver for the getQuoteByID field.
 func (r *queryResolver) GetQuoteByID(ctx context.Context, id string) (*model.Quote, error) {
+
 	// Add the ID to the end of the URL
 	requestURL := "http://34.160.48.181/quotes/" + id
 	request, err := http.NewRequest("GET", requestURL, nil)
@@ -102,9 +110,24 @@ func (r *queryResolver) GetQuoteByID(ctx context.Context, id string) (*model.Quo
 	}
 	// Configure the client-server connection
 	client := &http.Client{}
-	response, _ := client.Do(request)
+	//response, _ := client.Do(request)
 
-	responseData, err := io.ReadAll(response.Body)
+	// Check if input is valid
+	clientResponse, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	switch clientResponse.StatusCode {
+	case 204:
+		return nil, errors.New("error: Sorry Bruh, No content")
+	case 404:
+		return nil, errors.New("error: 404 Quote ID Not Found")
+	}
+	// if clientResponse.StatusCode != 200 {
+	// 	return nil, errors.New("error: " + clientResponse.Status)
+	// }
+	responseData, err := io.ReadAll(clientResponse.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -114,6 +137,7 @@ func (r *queryResolver) GetQuoteByID(ctx context.Context, id string) (*model.Quo
 	json.Unmarshal(responseData, &singleQuote)
 
 	return &singleQuote, nil
+
 }
 
 // Mutation returns generated.MutationResolver implementation.
