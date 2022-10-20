@@ -30,14 +30,19 @@ func (r *mutationResolver) PostQuote(ctx context.Context, input model.NewQuote) 
 	request.Header.Set("x-api-key", "COCKTAILSAUCE")
 
 	client := &http.Client{}
-	response, err := client.Do(request)
-
+	clientResponse, err := client.Do(request)
 	if err != nil {
 		return nil, err
 	}
-
+	// check for length of quote input if it is less than 3 characters
+	if clientResponse.StatusCode == 400 {
+		quote.Quote = ""
+		quote.Author = ""
+		quoteErr := errors.New(clientResponse.Status)
+		return quote, quoteErr
+	}
 	// This gives the ID from the created quote
-	responseData, _ := io.ReadAll(response.Body)
+	responseData, _ := io.ReadAll(clientResponse.Body)
 	json.Unmarshal(responseData, &quote)
 	// Send a Response Status
 	return quote, nil
@@ -64,12 +69,10 @@ func (r *mutationResolver) DeleteQuote(ctx context.Context, id string) (*string,
 	case 204:
 		deleteResponse := "Bruh, Delete was successful!"
 		return &deleteResponse, nil
-	case 404:
-		deleteResponse := "Sorry, ID Not Found! Please enter a correct ID"
-		return &deleteResponse, nil
 	default:
 		return &deleteResponse.Status, nil
 	}
+
 }
 
 // GetRandomQuote is the resolver for the getRandomQuote field.
@@ -124,15 +127,13 @@ func (r *queryResolver) GetQuoteByID(ctx context.Context, id string) (*model.Quo
 	case 404:
 		return nil, errors.New("error: 404 Quote ID Not Found")
 	}
-	// if clientResponse.StatusCode != 200 {
-	// 	return nil, errors.New("error: " + clientResponse.Status)
-	// }
+
 	responseData, err := io.ReadAll(clientResponse.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	// Taking the data from struct and putting it into json Quote
+	// Taking the data from struct and putting it into json Quote to return one quote
 	var singleQuote model.Quote
 	json.Unmarshal(responseData, &singleQuote)
 
