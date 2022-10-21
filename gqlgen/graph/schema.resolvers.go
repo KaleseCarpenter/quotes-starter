@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -24,9 +25,10 @@ func (r *mutationResolver) PostQuote(ctx context.Context, input model.NewQuote) 
 	}
 	newQuote, _ := json.Marshal(&quote)
 	postBody := bytes.NewBuffer(newQuote)
-	// Post it to the datatbase SUCCESSFULY
 	request, _ := http.NewRequest("POST", "http://34.160.48.181/quotes", postBody)
-	request.Header.Set("x-api-key", "COCKTAILSAUCE")
+
+	contextValue := fmt.Sprint(ctx.Value("x-api-key"))
+	request.Header.Set("x-api-key", contextValue)
 
 	client := &http.Client{}
 	clientResponse, err := client.Do(request)
@@ -52,18 +54,19 @@ func (r *mutationResolver) DeleteQuote(ctx context.Context, id string) (*string,
 	// Make a request to the API for DELETING by ID
 	apiURL := "http://34.160.48.181/quotes/" + id
 	requestURL, err := http.NewRequest("DELETE", apiURL, nil)
-	// Check Header
-	requestURL.Header.Set("x-api-key", "COCKTAILSAUCE")
-	// throw error if not found
 	if err != nil {
 		return nil, err
 	}
+	// Check Header
+	contextValue := fmt.Sprint(ctx.Value("x-api-key"))
+	requestURL.Header.Set("x-api-key", contextValue)
+
 	client := &http.Client{}
 	deleteResponse, err := client.Do(requestURL)
-	// throw error if response not found
 	if err != nil {
 		return nil, err
 	}
+
 	switch deleteResponse.StatusCode {
 	case 204:
 		deleteResponse := "Bruh, Delete was successful!"
@@ -75,13 +78,13 @@ func (r *mutationResolver) DeleteQuote(ctx context.Context, id string) (*string,
 
 // GetRandomQuote is the resolver for the getRandomQuote field.
 func (r *queryResolver) GetRandomQuote(ctx context.Context) (*model.Quote, error) {
-	// query the API endpoint
 	request, err := http.NewRequest("GET", "http://34.160.48.181/quotes", nil)
-	// Check Header
-	request.Header.Set("x-api-key", "COCKTAILSAUCE")
 	if err != nil {
 		return nil, err
 	}
+
+	contextValue := fmt.Sprint(ctx.Value("x-api-key"))
+	request.Header.Set("x-api-key", contextValue)
 	// Configure the client-server connection
 	client := &http.Client{}
 	response, _ := client.Do(request)
@@ -91,7 +94,6 @@ func (r *queryResolver) GetRandomQuote(ctx context.Context) (*model.Quote, error
 	}
 	var newGoQuote model.Quote
 	json.Unmarshal(responseData, &newGoQuote)
-
 	return &newGoQuote, nil
 }
 
@@ -101,13 +103,14 @@ func (r *queryResolver) GetQuoteByID(ctx context.Context, id string) (*model.Quo
 	// Add the ID to the end of the URL
 	requestURL := "http://34.160.48.181/quotes/" + id
 	request, err := http.NewRequest("GET", requestURL, nil)
-	request.Header.Set("x-api-key", "COCKTAILSAUCE")
+	//request.Header.Set("x-api-key", "COCKTAILSAUCE")
 	if err != nil {
 		return nil, err
 	}
-	// Configure the client-server connection
+	contextValue := fmt.Sprint(ctx.Value("x-api-key"))
+	request.Header.Set("x-api-key", contextValue)
+
 	client := &http.Client{}
-	//response, _ := client.Do(request)
 	clientResponse, err := client.Do(request)
 	if err != nil {
 		return nil, err
